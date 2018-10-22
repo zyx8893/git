@@ -555,7 +555,7 @@ test_expect_success 'when server does not send "ready", expect FLUSH' '
 	printf "/acknowledgments/,$ s/0000/0001/" \
 		>"$HTTPD_ROOT_PATH/one-time-sed" &&
 
-	GIT_TRACE_PACKET="$(pwd)/log" test_must_fail git -C http_child \
+	test_must_fail env GIT_TRACE_PACKET="$(pwd)/log" git -C http_child \
 		-c protocol.version=2 \
 		fetch "$HTTPD_URL/one_time_sed/http_parent" 2> err &&
 	grep "fetch< acknowledgments" log &&
