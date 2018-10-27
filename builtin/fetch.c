@@ -259,7 +259,7 @@ static struct refname_hash_entry *refname_hash_add(struct hashmap *map,
 	size_t len = strlen(refname);
 
 	FLEX_ALLOC_MEM(ent, refname, refname, len);
-	hashmap_entry_init(ent, memhash(refname, len));
+	hashmap_entry_init(ent, strhash(refname));
 	oidcpy(&ent->oid, oid);
 	hashmap_add(map, ent);
 	return ent;
@@ -282,11 +282,7 @@ static void refname_hash_init(struct hashmap *map)
 
 static int refname_hash_exists(struct hashmap *map, const char *refname)
 {
-	struct hashmap_entry key;
-	size_t len = strlen(refname);
-	hashmap_entry_init(&key, memhash(refname, len));
-
-	return !!hashmap_get(map, &key, refname);
+	return !!hashmap_get_from_hash(map, strhash(refname), refname);
 }
 
 static void find_non_local_tags(const struct ref *refs,
@@ -365,12 +361,10 @@ static void find_non_local_tags(const struct ref *refs,
 	 */
 	for_each_string_list_item(remote_ref_item, &remote_refs_list) {
 		const char *refname = remote_ref_item->string;
-		struct hashmap_entry key;
 
-		hashmap_entry_init(&key, memhash(refname, strlen(refname)));
-		item = hashmap_get(&remote_refs, &key, refname);
+		item = hashmap_get_from_hash(&remote_refs, strhash(refname), refname);
 		if (!item)
-			continue; /* can this happen??? */
+			BUG("unseen remote ref?");
 
 		/* Unless we have already decided to ignore this item... */
 		if (!is_null_oid(&item->oid)) {
@@ -497,12 +491,12 @@ static struct ref *get_ref_map(struct remote *remote,
 
 	for (rm = ref_map; rm; rm = rm->next) {
 		if (rm->peer_ref) {
-			struct hashmap_entry key;
 			const char *refname = rm->peer_ref->name;
 			struct refname_hash_entry *peer_item;
 
-			hashmap_entry_init(&key, memhash(refname, strlen(refname)));
-			peer_item = hashmap_get(&existing_refs, &key, refname);
+			peer_item = hashmap_get_from_hash(&existing_refs,
+							  strhash(refname),
+							  refname);
 			if (peer_item) {
 				struct object_id *old_oid = &peer_item->oid;
 				oidcpy(&rm->peer_ref->old_oid, old_oid);
