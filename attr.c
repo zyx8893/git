@@ -372,7 +372,7 @@ static struct match_attr *parse_attr_line(const char *line, const char *src,
 	if (strlen(ATTRIBUTE_MACRO_PREFIX) < namelen &&
 	    starts_with(name, ATTRIBUTE_MACRO_PREFIX)) {
 		if (!macro_ok) {
-			fprintf(stderr, "%s not allowed: %s:%d\n",
+			fprintf(stderr, _("%s not allowed: %s:%d\n"),
 				name, src, lineno);
 			goto fail_return;
 		}
