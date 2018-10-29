@@ -165,7 +165,7 @@ static int mark_object(struct object *obj, int type, void *data, struct fsck_opt
 		return 0;
 
 	if (!(obj->flags & HAS_OBJ)) {
-		if (parent && !has_object_file(&obj->oid)) {
+		if (parent && !repo_has_object_file(the_repository, &obj->oid)) {
 			printf_ln(_("broken link from %7s %s\n"
 				    "              to %7s %s"),
 				  printable_type(parent),
